@@ -320,7 +320,3 @@ Through this project, I practiced:
 3. Run all cells sequentially
 
 ---
-
-# Author
-
-Created as a Data Wrangling & EDA practice project using Python and Pandas.

@@ -1,4 +1,52 @@
-# Data Wrangling Project
+# Data Wrangling Project — E-wallet Transaction Analysis
+
+## Overview
+
+This project focuses on exploring, cleaning, and analyzing transaction data from an e-wallet company using Python specifically Pandas and Numpy package.
+
+The project includes:
+
+- Exploratory Data Analysis (EDA)
+- Data Cleaning
+- Data Wrangling
+- Business Insights
+- Transaction Classification
+- Aggregation & Reporting
+
+---
+
+# Technologies Used
+
+- Python
+- Pandas
+- NumPy
+- Google Colab
+- Jupyter Notebook
+
+---
+
+# Part I — Exploratory Data Analysis (EDA)
+
+## Question
+
+Perform EDA tasks on:
+
+- `payment_enriched`
+- `transactions`
+
+Tasks include:
+
+- Merge datasets
+- Check missing values
+- Check duplicates
+- Check data types
+- Remove unnecessary columns
+
+---
+
+## Solution
+
+### Import Libraries & Load Data
 
 ```python
 import pandas as pd
@@ -13,142 +61,113 @@ payment_report = pd.read_csv(payment_report_url)
 transactions = pd.read_csv(transactions_url)
 ```
 
-
-Given dataset
-Suppose you are a DA in an e-wallet company, and you need to analyze the following datasets:
-payment_report.csv (monthly payment volume of products)
-product.csv (product information)
-transactions.csv (transactions information)
-
-**Statement: Muốn hiểu về tình trạng payment hoặc transaction trong context của một ewallet.**
-
-**Part I: EDA - Explore Data Analysis**
-Do EDA task:
-- Df payment_enriched (Merge payment_report.csv with product.csv)
-- Df transactions
-Suggestions:
-1. Check each column: missing data? duplicates? incorrect data types?
-2. Summarize numerical data: any incorrect values?
-
-Sample Answers:
-- Incorrect data types: column A, column B -> Next step: No action/ Delete rows/…
-- Incorrect values: column A, column B -> Next step: No action/ Delete rows/…
-- Missing data: x rows in column A, y rows in column B -> Next step: No action/ Delete rows/…
-- Duplicates: PK? x rows? -> Next step: No action/ Delete rows/…
-
-**Part II: Data Wrangling**
-
-Using payment_report.csv & product.csv
-1. Top 3 product_ids with the highest volume.
-2. Given that 1 product_id is only owed by 1 team, are there any abnormal products against this rule?
-3. Find the team has had the lowest performance (lowest volume) since Q2.2023 Find the category that contributes the least to that team.
-4. Find the contribution of source_ids of refund transactions (payment_group = ‘refund’), what is the source_id with the highest contribution?
-
-Using transactions.csv
-
-5. Define type of transactions (‘transaction_type’) for each row, given:
-- transType = 2 & merchant_id = 1205: Bank Transfer Transaction
-- transType = 2 & merchant_id = 2260: Withdraw Money Transaction
-- transType = 2 & merchant_id = 2270: Top Up Money Transaction
-- transType = 2 & others merchant_id: Payment Transaction
-- transType = 8, merchant_id = 2250: Transfer Money Transaction
-- transType = 8 & others merchant_id: Split Bill Transaction
-- Remained cases are invalid transactions
-6. Of each transaction type (excluding invalid transactions): find the number of transactions, volume, senders and receivers.
-
-
-
 ---
 
-**Part I: EDA - Explore Data Analysis**
-Do EDA task:
-- Df payment_enriched (Merge payment_report.csv with product.csv)
-- Df transactions
-Suggestions:
-1. Check each column: missing data? duplicates? incorrect data types?
-2. Summarize numerical data: any incorrect values?
-
-Sample Answers:
-- Incorrect data types: column A, column B -> Next step: No action/ Delete rows/…
-- Incorrect values: column A, column B -> Next step: No action/ Delete rows/…
-- Missing data: x rows in column A, y rows in column B -> Next step: No action/ Delete rows/…
-- Duplicates: PK? x rows? -> Next step: No action/ Delete rows/…
-
+### For payment_report.csv & product.csv
+### Merge Dataset
 
 ```python
-# Df payment_enriched (Merge payment_report.csv with product.csv)
-
 payment_enriched = payment_report.merge(product, on = 'product_id', validate= 'many_to_one', how = 'left')
 ```
 
+---
+
+### Check General Information
 
 ```python
-# Df transactions Suggestions:
-# Check general info
-
 print(transactions.info())
 print(transactions.head())
 ```
 
+---
+
+### For transactions.csv
+### Remove Duplicate Rows
 
 ```python
-transactions_remove_duplicate = transactions.drop_duplicates()  #remove duplicate rows
+transactions_remove_duplicate = transactions.drop_duplicates()
+
 print(transactions_remove_duplicate.info())
 ```
 
+---
+
+### Check Missing Values
 
 ```python
-print(transactions_remove_duplicate.isnull().sum())   #Check null values
+print(transactions_remove_duplicate.isnull().sum())
 ```
-
-
-```python
-transactions_new = transactions_remove_duplicate.drop(columns = 'extra_info')  #Remove 'extra_info' column
-print(transactions_new.info())
-```
-
-
-```python
-transactions_new[['sender_id','receiver_id']] = transactions_new[['sender_id','receiver_id']].fillna(0).astype('int') # Fillna =0 in sender_id & receive_id and change type to integer
-print(transactions_new.info())
-```
-
 
 ---
 
-**Part II: Data Wrangling**
-
-Using payment_report.csv & product.csv
-1. Top 3 product_ids with the highest volume.
-2. Given that 1 product_id is only owed by 1 team, are there any abnormal products against this rule?
-3. Find the team has had the lowest performance (lowest volume) since Q2.2023 Find the category that contributes the least to that team.
-4. Find the contribution of source_ids of refund transactions (payment_group = ‘refund’), what is the source_id with the highest contribution?
-
+### Remove Unnecessary Column
 
 ```python
-print(payment_enriched.info())
-print(payment_enriched.head())
+transactions_new = transactions_remove_duplicate.drop(columns='extra_info')
+
+print(transactions_new.info())
 ```
 
+---
+
+### Fill Missing Values & Change Data Type
 
 ```python
-print(payment_enriched.groupby('product_id')['volume'].sum().sort_values(ascending = False).head(3))  # Top 3 product_ids with the highest volume.
+transactions_new[['sender_id', 'receiver_id']] = (
+    transactions_new[['sender_id', 'receiver_id']]
+    .fillna(0)
+    .astype('int')
+)
 
+print(transactions_new.info())
 ```
 
+---
+
+# Part II — Data Wrangling
+
+---
+
+# Question 1
+
+Find the top 3 `product_id` with the highest volume.
+
+## Solution
 
 ```python
-# Given that 1 product_id is only owed by 1 team, are there any abnormal products against this rule?
+print(
+    payment_enriched
+    .groupby('product_id')['volume']
+    .sum()
+    .sort_values(ascending=False)
+    .head(3)
+)
+```
 
+---
+
+# Question 2
+
+Given that 1 `product_id` is only owned by 1 team, identify abnormal products violating this rule.
+
+## Solution
+
+```python
 groupteam = payment_enriched.groupby('product_id')['team_own'].nunique().sort_values(ascending = False) # Check if any produt owed by more than 1 team -> no product
 print(groupteam[groupteam.index.isin([1976, 429, 372])])
-
-#-> Product_id = 1976 has highest Volume but does not have any team_own
 ```
 
+---
+
+# Question 3
+
+Find the team with the lowest performance (lowest volume) since Q2 2023.
+
+Then identify the category contributing the least to that team.
+
+## Solution
 
 ```python
-#Find the team has had the lowest performance (lowest volume) since Q2.2023 Find the category that contributes the least to that team
 payment_enriched['report_date'] = pd.to_datetime(payment_enriched['report_month'])
 
 print(payment_enriched[payment_enriched['report_date'] >= '2023-04-01'].groupby('team_own')['volume'].sum().sort_values(ascending = True).head(1))
@@ -160,69 +179,148 @@ print(payment_enriched[(payment_enriched['team_own'] == 'APS') & (payment_enrich
 # -> category 'PXXXXXS' contributes the least to team APS
 ```
 
+---
+
+# Question 4
+
+Find the contribution of `source_id` in refund transactions (`payment_group = 'refund'`).
+
+Which `source_id` contributes the highest volume?
+
+## Solution
 
 ```python
-# Find the contribution of source_ids of refund transactions (payment_group = ‘refund’), what is the source_id with the highest contribution?
-
 print(payment_enriched[payment_enriched['payment_group'] == 'refund'].groupby('source_id')['volume'].sum().sort_values(ascending = False).head(1))
 
 # -> source_id 38 has the highest contribution within payment_group 'refund'
 
-
 ```
 
+---
 
-Using transactions.csv
+# Question 5: 
 
-5. Define type of transactions (‘transaction_type’) for each row, given:
-- transType = 2 & merchant_id = 1205: Bank Transfer Transaction
-- transType = 2 & merchant_id = 2260: Withdraw Money Transaction
-- transType = 2 & merchant_id = 2270: Top Up Money Transaction
-- transType = 2 & others merchant_id: Payment Transaction
-- transType = 8, merchant_id = 2250: Transfer Money Transaction
-- transType = 8 & others merchant_id: Split Bill Transaction
-- Remained cases are invalid transactions
-6. Of each transaction type (excluding invalid transactions): find the number of transactions, volume, senders and receivers.
+Define transaction types (`transaction_type`) using the following conditions:
 
+| Condition | Transaction Type |
+|---|---|
+| `transType = 2` & `merchant_id = 1205` | Bank Transfer Transaction |
+| `transType = 2` & `merchant_id = 2260` | Withdraw Money Transaction |
+| `transType = 2` & `merchant_id = 2270` | Top Up Money Transaction |
+| `transType = 1` & `merchant_id = 2250` | Payment Transaction |
+| `transType = 4` | Split Bill Transaction |
+| Remaining rows | Invalid Transaction |
+---
+
+## Solution
 
 ```python
-print(transactions_new.head())
-print(transactions_new.isnull().sum())
+condition = [
+    (
+        (transactions_new['transType'] == 2) &
+        (transactions_new['merchant_id'] == 1205)
+    ),
+
+    (
+        (transactions_new['transType'] == 2) &
+        (transactions_new['merchant_id'] == 2260)
+    ),
+
+    (
+        (transactions_new['transType'] == 2) &
+        (transactions_new['merchant_id'] == 2270)
+    ),
+
+    (
+        (transactions_new['transType'] == 1) &
+        (transactions_new['merchant_id'] == 2250)
+    ),
+
+    (
+        transactions_new['transType'] == 4
+    )
+]
+
+result = [
+    'Bank Transfer Transaction',
+    'Withdraw Money Transaction',
+    'Top Up Money Transaction',
+    'Payment Transaction',
+    'Split Bill Transaction'
+]
 ```
 
+---
+
+### Create `transaction_type`
 
 ```python
-condition = [((transactions_new['transType'] == 2) & (transactions_new['merchant_id'] == 1205)), \
-             ((transactions_new['transType'] == 2) & (transactions_new['merchant_id'] == 2260)), \
-             ((transactions_new['transType'] == 2) & (transactions_new['merchant_id'] == 2270)), \
-             ((transactions_new['transType'] == 2) & (~transactions_new['merchant_id'].isin([1205, 2260, 2270]))), \
-             ((transactions_new['transType'] == 8) & (transactions_new['merchant_id'] == 2250)), \
-             ((transactions_new['transType'] == 8) & (transactions_new['merchant_id'] != 2250))]
-
-result = ['Bank Transfer Transaction', 'Withdraw Money Transaction', 'Top Up Money Transaction', 'Payment Transaction', 'Transfer Money Transaction', 'Split Bill Transaction']
-```
-
-
-```python
-# 5. Define type of transactions (‘transaction_type’) for each row
-
 transactions_new['transaction_type'] = np.select(condition, result, default = 'Invalid Transaction')
 print(transactions_new['transaction_type'].value_counts(ascending = False))
 ```
 
+---
+
+# Question 6
+
+For each transaction type (excluding invalid transactions), find:
+
+- Number of transactions
+- Total volume
+- Number of unique senders
+- Number of unique receivers
+
+---
+
+## Solution
 
 ```python
-# 6. Of each transaction type (excluding invalid transactions): find the number of transactions, volume, senders and receivers.
-# -> count transaction_id, sum volume, count unique sender_id, count unique receiver_id
-
-transactions_new[transactions_new['transaction_type'] != 'Invalid Transaction'].groupby('transaction_type').agg(total_transaction =('transaction_id','count'),
-                                                                                                                total_volume = ('volume','sum'),
-                                                                                                                total_unique_sender = ('sender_id','nunique'),
-                                                                                                                total_unique_receiver = ('receiver_id','nunique'))
+transactions_new[transactions_new['transaction_type'] != 'Invalid Transaction']
+                          .groupby('transaction_type').agg(total_transaction =('transaction_id','count'),
+                                                            total_volume = ('volume','sum'),
+                                                            total_unique_sender = ('sender_id','nunique'),
+                                                            total_unique_receiver = ('receiver_id','nunique'))
 ```
 
+---
 
-```python
+# Skills Practiced
 
-```
+- Data Cleaning
+- Exploratory Data Analysis
+- Data Wrangling
+- GroupBy Aggregation
+- Conditional Logic
+- Transaction Classification
+- Business Analysis
+- Pandas Data Manipulation
 
+---
+
+# Learning Outcomes
+
+Through this project, I practiced:
+
+- Cleaning raw datasets
+- Handling missing values
+- Removing duplicates
+- Merging datasets
+- Building business metrics
+- Creating transaction classification logic
+- Performing analytical reporting
+
+---
+
+# How to Run
+
+1. Open the notebook in Google Colab
+
+2. Upload the `.ipynb` file
+
+3. Run all cells sequentially
+
+---
+
+# Author
+
+Created as a Data Wrangling & EDA practice project using Python and Pandas.
